@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Link shortener</title>
+
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/css/toastr.min.css">
+
+	<script src="/js/jquery-3.6.0.min.js"></script>
+	<script src="/js/popper.min.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/toastr.min.js"></script>
+	<script src="/js/clipboard.min.js"></script>
+	<script src="/js/app.js"></script>
+</head>
+
+<body>
+	<nav class="navbar navbar-dark bg-dark">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="#">Link shortener</a>
+		</div>
+	</nav>
+
+	<div class="container mt-4">
+		<div class="row">
+			<div class="col">
+				<h4>Enter your url</h4>
+			</div>
+		</div>
+		<div class="row">
+			<div class="mt-2 col-12 col-xs-12 col-sm-12 col-md-9">
+				<input type="text" class="form-control w-100" id="tbx_url" placeholder="URL">
+			</div>
+			<div class="mt-2 col-12 col-xs-12 col-12 col-sm-12 col-md-3">
+				<button id="btn_generate" class="btn btn-primary  w-100">Generate Link</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="modal_result" aria-hidden="true" aria-labelledby="modal_resultTitle" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" >
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modal_resultTitle">Short url</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="container">
+						<div class="row">
+							<div class="col">
+								Here is your short url
+								<div class="row">
+									<div class="mt-2 col-12 col-xs-12 col-sm-12 col-md-9">
+										<input type="text" readonly="1" class="form-control w-100" id="txb_result">
+									</div>
+									<div class="mt-2 col-12 col-xs-12 col-12 col-sm-12 col-md-3">
+										<button id="btn_copy" class="btn btn-primary w-100"  data-clipboard-target="#txb_result">Copy</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
