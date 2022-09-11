@@ -18,7 +18,8 @@ if (!FS.existsSync("./data/config.json")) {
 	let defaultConfig: IConfiguration = {
 		port: 80,
 		link_length: 6,
-		max_links_per_hour: 100
+		max_links_per_hour: 100,
+		max_link_length: 10000
 	}
 	FS.writeFileSync("./data/config.json", JSON.stringify(defaultConfig, null, 4), 'utf8');
 }

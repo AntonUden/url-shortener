@@ -58,6 +58,11 @@ export default class Server {
 				return;
 			}
 
+			if(url.length > config.max_link_length) {
+				res.status(400).send("Url too long");
+				return;
+			}
+
 			let id = this.generateId();
 			if (id == null) {
 				res.status(500).send("Failed to generate url");
