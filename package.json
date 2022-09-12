@@ -4,6 +4,7 @@
   "description": "A simple linkshortener made with typescript",
   "main": "./dist/app.js",
   "scripts": {
+    "build": "tsc --build",
     "start": "node ./dist/app.js",
     "test": "nodemon --ignore ./client/ ./dist/app.js"
   },
