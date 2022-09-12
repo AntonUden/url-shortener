@@ -1,9 +1,9 @@
 import HTTP from "http";
 import Express from "express";
 import BodyParser from "body-parser";
-import IConfiguration from "./IConfiguration";
+import IConfiguration from "../interfaces/IConfiguration";
 import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit'
-import * as FS from "fs";
+import DatabaseProvider from "../db/DatabaseProvider";
 
 export default class Server {
 	private _express: Express.Express;
@@ -12,8 +12,11 @@ export default class Server {
 
 	private _createLinkRateLimit: RateLimitRequestHandler;
 
-	constructor(config: IConfiguration) {
+	private _dbProvider: DatabaseProvider;
+
+	constructor(config: IConfiguration, dbProvider: DatabaseProvider) {
 		this._config = config;
+		this._dbProvider = dbProvider;
 
 		this._createLinkRateLimit = rateLimit({
 			windowMs: 60 * 60 * 1000,
@@ -23,11 +26,11 @@ export default class Server {
 		})
 
 		this._express = Express();
-		this._express.set("port", config.port);
+		this._express.set("port", this._config.port);
 
 		this._http = new HTTP.Server(this._express);
-
-		this._express.use('/', Express.static(__dirname + '/../client'));
+		
+		this._express.use('/', Express.static(__dirname + '/../../client'));
 		this._express.use(BodyParser.text());
 
 		this._express.all("/s/:id", async (req: Express.Request, res: Express.Response) => {
@@ -37,18 +40,21 @@ export default class Server {
 				return;
 			}
 
-			let file: string = "./data/links/" + id;
+			try {
+				let url: string | null = await this._dbProvider.getURL(id);
 
-			console.log(file);
+				console.log(id + " => " + url);
 
-			if (!FS.existsSync(file)) {
-				res.status(404).send("404: Link not found");
+				if (url == null) {
+					res.status(404).send("404: Link not found");
+					return;
+				}
+
+				res.redirect(301, url)
+			} catch (err) {
+				res.status(500).send("Failed to fetch url");
 				return;
 			}
-
-			let url = FS.readFileSync(file, 'utf8');
-
-			res.redirect(301, url)
 		});
 
 		this._express.post("/api/create_link", this._createLinkRateLimit, async (req: Express.Request, res: Express.Response) => {
@@ -58,17 +64,17 @@ export default class Server {
 				return;
 			}
 
-			if(url.length > config.max_link_length) {
+			if (url.length > config.max_link_length) {
 				res.status(400).send("Url too long");
 				return;
 			}
 
-			let id = this.generateId();
+			let id = await this._dbProvider.createURL(url);
+
 			if (id == null) {
 				res.status(500).send("Failed to generate url");
 				return;
 			}
-			FS.writeFileSync("./data/links/" + id, url, 'utf8');
 
 			console.log("Created url " + id + " pointing towards " + url);
 
@@ -78,31 +84,9 @@ export default class Server {
 			}));
 		});
 
-		this._http.listen(config.port, function () {
-			console.log("Listening on port: " + config.port);
+		this._http.listen(this._config.port, () => {
+			console.log("Listening on port: " + this._config.port);
 		});
-	}
-
-	private generateId(): string {
-		// Max 10k attempts
-		for (let i = 0; i < 10000; i++) {
-			let id = this.randomString(this._config.link_length);
-			console.log("./data/links/" + id);
-			if (FS.existsSync("./data/links/" + id)) {
-				console.warn("Id already exists " + id);
-				continue;
-			}
-			return id;
-		}
-
-		return null;
-	}
-
-	private randomString(length: number): string {
-		let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		let result = '';
-		for (let i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-		return result;
 	}
 
 	// https://stackoverflow.com/a/49185442
